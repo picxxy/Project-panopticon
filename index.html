@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Panopticon | Tactical OSINT</title>
+    <meta name="description" content="Real-time tactical intelligence dashboard.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/globe.gl"></script>
+    <link rel="stylesheet" href="css/styles.css?v=2">
+</head>
+<body>
+    <div id="toastContainer" class="toast-container"></div>
+    <div id="app">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="assets/logo.png" alt="Panopticon Logo" class="brand-logo" />
+                <h2>Panopticon</h2>
+            </div>
+            <nav>
+                <button class="nav-btn active" id="btnDashboard">Dashboard</button>
+                <button class="nav-btn" id="btnOSINT">Breach Intel</button>
+                <button class="nav-btn" id="btnSurveillance">Surveillance</button>
+                <button class="nav-btn" id="btnGlobe">IP Tracker Globe</button>
+                <button class="nav-btn" id="btnCrypto">Crypto Trace</button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="search-container" id="searchContainer">
+                    <input type="text" id="searchInput" placeholder="Search IP Address or Domain..." autocomplete="off">
+                    <button id="searchBtn" class="primary-btn">Analyze</button>
+                </div>
+                <div class="user-profile">
+                    <div class="avatar" id="userAvatar">👨‍💻</div>
+                    <span id="userRole">Analyst</span>
+                </div>
+            </header>
+
+            <div class="dashboard-grid" id="dashboardView">
+                <!-- Overview Section -->
+                <section class="overview">
+                    <div class="card threat-score-card">
+                        <h3>Overall Threat Score</h3>
+                        <div class="score-container">
+                            <div class="circular-progress" id="threatScoreDisplay">
+                                <span class="score-value">0</span>
+                            </div>
+                        </div>
+                        <p id="threatStatus">Awaiting Input...</p>
+                    </div>
+
+                    <div class="card info-card">
+                        <h3>Target Information</h3>
+                        <div class="info-list" id="targetInfo">
+                            <div class="info-item"><span>Target:</span> <strong id="infoTarget">-</strong></div>
+                            <div class="info-item"><span>Type:</span> <strong id="infoType">-</strong></div>
+                            <div class="info-item"><span>Location:</span> <strong id="infoLocation">-</strong></div>
+                            <div class="info-item"><span>ISP:</span> <strong id="infoISP">-</strong></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Intelligence Feeds Section -->
+                <section class="feeds">
+                    <div class="card source-card" id="cardAbuseIPDB">
+                        <div class="card-header">
+                            <h3>Network Intrusion Feed</h3>
+                            <span class="status-badge pending">Pending</span>
+                        </div>
+                        <div class="card-body">
+                            <p>Confidence Score: <span class="metric">-</span></p>
+                            <p>Total Reports: <span class="metric">-</span></p>
+                        </div>
+                    </div>
+
+                    <div class="card source-card" id="cardVirusTotal">
+                        <div class="card-header">
+                            <h3>Malware Analysis Engine</h3>
+                            <span class="status-badge pending">Pending</span>
+                        </div>
+                        <div class="card-body">
+                            <p>Malicious Detections: <span class="metric">- / -</span></p>
+                            <p>Last Analysis: <span class="metric">-</span></p>
+                        </div>
+                    </div>
+
+                    <div class="card source-card" id="cardWhois">
+                        <div class="card-header">
+                            <h3>Target Telemetry</h3>
+                            <span class="status-badge safe">Info</span>
+                        </div>
+                        <div class="card-body">
+                            <p>ASN: <span class="metric">-</span></p>
+                            <p>Org: <span class="metric">-</span></p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Visualization Section -->
+                <section class="visuals">
+                    <div class="card graph-card">
+                        <h3>Attack Trends (30 Days)</h3>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Surveillance View -->
+            <div id="surveillanceView" class="hidden">
+                <div class="card map-card">
+                    <div class="card-header">
+                        <h3>Global CCTV Surveillance Map</h3>
+                        <span class="status-badge pending" id="mapStatus">Ready</span>
+                    </div>
+                    <div class="map-container">
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Globe View -->
+            <div id="globeView" class="hidden">
+                <div id="globeViz"></div>
+            </div>
+
+            <!-- OSINT Dark Web View -->
+            <div id="osintView" class="hidden">
+                <div class="card map-card" style="overflow-y: auto;">
+                    <div class="card-header">
+                        <h3>Dark Web & Breach Intel</h3>
+                        <span class="status-badge" id="osintStatus" style="visibility: hidden;">Ready</span>
+                    </div>
+                    <div class="breach-grid" id="breachResults">
+                        <div style="text-align: center; color: var(--text-secondary); width: 100%; padding: 3rem 0;">
+                            Awaiting target input. E.g., target@example.com
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crypto Trace View -->
+            <div id="cryptoView" class="hidden">
+                <div class="card map-card" style="overflow-y: auto;">
+                    <div class="card-header" style="margin-bottom: 0;">
+                        <h3>Financial Intelligence (BTC)</h3>
+                        <span class="status-badge" id="cryptoStatus" style="visibility: hidden;">Ready</span>
+                    </div>
+                    <div id="cryptoResults" style="padding: 1.5rem; display: none;">
+                        <div class="crypto-metrics">
+                            <div class="crypto-card">
+                                <span>Current Balance</span>
+                                <h2 id="cryptoBalance" class="positive">0.00000000 BTC</h2>
+                            </div>
+                            <div class="crypto-card">
+                                <span>Total Received</span>
+                                <h2 id="cryptoReceived">0.00000000 BTC</h2>
+                            </div>
+                            <div class="crypto-card">
+                                <span>Total Sent</span>
+                                <h2 id="cryptoSent">0.00000000 BTC</h2>
+                            </div>
+                            <div class="crypto-card">
+                                <span>Total Transactions</span>
+                                <h2 id="cryptoTxs">0</h2>
+                            </div>
+                        </div>
+                        <h4 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--text-secondary);">Recent Transactions</h4>
+                        <div class="crypto-ledger" id="cryptoLedger">
+                            <!-- Transactions populate here -->
+                        </div>
+                    </div>
+                    <div id="cryptoPlaceholder" style="text-align: center; color: var(--text-secondary); width: 100%; padding: 3rem 0;">
+                        Awaiting target BTC Address. E.g., 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet for maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-semicircle@2.0.4/Semicircle.min.js"></script>
+    
+    <script src="js/api.js?v=4"></script>
+    <script src="js/map.js?v=2"></script>
+    <script src="js/globe.js"></script>
+    <script src="js/app.js?v=5"></script>
+</body>
+</html>
