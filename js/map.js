@@ -12,9 +12,9 @@ class SurveillanceMap {
     }
 
     init() {
-        // Initialize the map centered on Europe, just like sunders.uber.space
+        // Initialize the map centered on Europe, 
         // Prevent excessive zooming out and dragging off the world bounds
-        // Light mode map tiles (CartoDB Positron) to match sunders.uber.space originally
+        // Light mode map tiles (CartoDB Positron) 
         const lightMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
@@ -65,7 +65,6 @@ class SurveillanceMap {
         this.markers.addTo(this.map);
 
         // Fetch cameras whenever the map stops moving. 
-        // The sunders.uber.space backend automatically handles clustering at low zoom levels!
         this.map.on('moveend', () => {
             this.fetchCameras();
         });
@@ -91,7 +90,6 @@ class SurveillanceMap {
         
         const bounds = this.map.getBounds();
         const size = this.map.getSize();
-        // sunders.uber.space API expects bbox as West,South,East,North
         const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
         const zoom = this.map.getZoom();
 
@@ -207,7 +205,7 @@ class SurveillanceMap {
                 this.markers.addLayer(marker);
 
                 // --- REAL TELEMETRY FOV CONE RENDERING ---
-                // Only render geometries that we mathematically have actual node data for. No guessing.
+                // Only render geometries that we mathematically have actual node data for
                 const focusColor = this.getFocusColor(plotType);
                 const height = this.getCameraHeight(node);
                 const radius = height * 7; // Physically derived sensing range

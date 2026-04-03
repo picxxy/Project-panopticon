@@ -479,14 +479,14 @@ body::after {
     color: #000 !important;
 }
 
-/* Sunders Map Matching Styles: Composite Labels */
+/*  Map: Composite Labels */
 .composite-cameras-label {
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 .composite-cameras-label span {
-    background: #0066cc; /* Match sunders blue */
+    background: #0066cc; 
     color: white;
     padding: 2px 5px;
     border-radius: 3px;
@@ -495,7 +495,7 @@ body::after {
     display: inline-block;
 }
 
-/* Sunders Map Matching Styles: Popups */
+
 .popup-content {
     width: 100%;
     margin-bottom: 0px;
@@ -553,7 +553,7 @@ body::after {
     background: #111;
 }
 
-/* Custom leaflet tweaks for minimap */
+/* Custom tweaks for minimap */
 #hud-minimap .leaflet-control-zoom {
     transform: scale(0.7);
     transform-origin: top left;
@@ -562,7 +562,7 @@ body::after {
     text-decoration: underline;
 }
 
-/* OSINT Breach View Styles */
+/*  Breach View Styles */
 #osintView {
     display: flex;
     flex-direction: column;

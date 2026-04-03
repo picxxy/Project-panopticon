@@ -1,6 +1,5 @@
 /**
  * api.js
- * Fetches data from Threat Intelligence APIs in real-time.
  */
 
 // ==========================================

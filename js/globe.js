@@ -9,7 +9,7 @@ class IpGlobeTracker {
     }
 
     setupHud() {
-        // Build the cyberpunk HUD overlay specifically for the 3D globe tab
+        // Build the  HUD overlay specifically for the 3D globe tab
         this.hud = document.createElement('div');
         this.hud.className = 'card globe-hud';
         this.hud.style.position = 'absolute';
