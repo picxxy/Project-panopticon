@@ -68,5 +68,10 @@ Then navigate to `http://localhost:8000` in your browser.
 
 ---
 
+## 👤 Author
+- **picxxy** - *Project Creator & Lead Developer* - [GitHub Profile](https://github.com/picxxy)
+
+---
+
 ## 🛡️ Disclaimer
 This tool is built for educational, defensive research, and authorized OSINT investigations. The developers assume no responsibility for malicious usage. All API queries are subject to the terms of service of their respective providers.
