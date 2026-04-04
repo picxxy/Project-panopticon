@@ -5,6 +5,7 @@
 
 class SurveillanceMap {
     constructor() {
+        this.apiNode = "https://sunders.uber.space";
         this.map = null;
         this.markers = L.layerGroup();
         this.isLoading = false;
@@ -97,8 +98,7 @@ class SurveillanceMap {
         this.updateStatus('Loading live data...');
 
         try {
-            // Use the same CORS proxy defined in api.js to securely bypass cross-origin restrictions
-            const targetUrl = `https://sunders.uber.space/camera.php?bbox=${bbox}&zoom=${zoom}&width=${size.x}&height=${size.y}`;
+            const targetUrl = `${this.apiNode}/camera.php?bbox=${bbox}&zoom=${zoom}&width=${size.x}&height=${size.y}`;
             const url = CORS_PROXY + targetUrl;
             
             const res = await fetch(url);
@@ -131,7 +131,7 @@ class SurveillanceMap {
                 // Label with number of composite cameras
                 const countTxt = `<span>${node.count}</span>`;
                 const emptyIcon = L.icon({
-                    iconUrl: 'https://sunders.uber.space/images/icon.png',
+                    iconUrl: `${this.apiNode}/images/icon.png`,
                     iconSize: [0, 0],
                     iconAnchor: [0, 0],
                     labelAnchor: [-6, 0]
@@ -169,7 +169,7 @@ class SurveillanceMap {
                 }
 
                 const markerIcon = L.icon({
-                    iconUrl: `https://sunders.uber.space/images/${iconName}.png`,
+                    iconUrl: `${this.apiNode}/images/${iconName}.png`,
                     iconSize: [20, 20],
                     iconAnchor: [10, 10],
                     popupAnchor : [0, -10]

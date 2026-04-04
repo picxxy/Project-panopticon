@@ -10,10 +10,12 @@ const API_KEYS = {
     VIRUSTOTAL: "" // Get yours at https://www.virustotal.com/ (e.g. "a27f4e1579...")
 };
 
-// We use cors-anywhere to bypass browser CORS restrictions for local testing.
-const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
-
 class ThreatAPI {
+    // Network Proxies and Constants
+    static CONSTANTS = {
+        CORS: "https://cors-anywhere.herokuapp.com/"
+    };
+    
     // Intelligent Cache to prevent duplicate network calls
     static cache = new Map();
 
@@ -25,10 +27,10 @@ class ThreatAPI {
 
     static async fetchAbuseIPDB(ip) {
         if (this.cache.has(`abuse_${ip}`)) return this.cache.get(`abuse_${ip}`);
-        if (!API_KEYS.ABUSEIPDB) throw new Error("API Key Missing: Please add your AbuseIPDB key in api.js");
+        if (!API_KEYS.ABUSEIPDB) throw new Error("API Key Missing");
 
         const url = `https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}&maxAgeInDays=90`;
-        const proxyUrl = CORS_PROXY + url;
+        const proxyUrl = ThreatAPI.CONSTANTS.CORS + url;
 
         try {
             const res = await fetch(proxyUrl, {
@@ -51,13 +53,13 @@ class ThreatAPI {
         }
     }
 
-    static async fetchVirusTotal(target, isIP) {
+    static async fetchVirusTotal(target, isIP, isHash = false, isURL = false) {
         if (this.cache.has(`vt_${target}`)) return this.cache.get(`vt_${target}`);
-        if (!API_KEYS.VIRUSTOTAL) throw new Error("API Key Missing: Please add your VirusTotal key in api.js");
+        if (!API_KEYS.VIRUSTOTAL) throw new Error("API Key Missing");
 
-        const endpoint = isIP ? `ip_addresses/${target}` : `domains/${target}`;
+        const endpoint = isHash ? `files/${target}` : (isURL ? `urls/${btoa(target).replace(/=/g, "")}` : `ip_addresses/${target}`);
         const url = `https://www.virustotal.com/api/v3/${endpoint}`;
-        const proxyUrl = CORS_PROXY + url;
+        const proxyUrl = ThreatAPI.CONSTANTS.CORS + url;
 
         try {
             const res = await fetch(proxyUrl, {
@@ -192,7 +194,7 @@ class ThreatAPI {
                     }
                 }
             } catch (error) {
-                console.warn("Real API failed", error);
+                console.warn("API failed", error);
             }
         }
         return [];
@@ -211,7 +213,7 @@ class ThreatAPI {
             }
             throw new Error('Geolocation failed');
         } catch (error) {
-            console.error("Globe GeoIP API failed:", error);
+            console.error("GeoIP API failed:", error);
             return { lat: 38.8977, lon: -77.0365, city: "Washington D.C.", country: "United States", isp: "Unknown ISP", query: ip };
         }
     }
@@ -238,13 +240,11 @@ class ThreatAPI {
         let errorMessage = null;
 
         try {
-            // Primary: HackerTarget Host Search (Fast, text-based CSV)
-            const htRes = await fetch(CORS_PROXY + `https://api.hackertarget.com/hostsearch/?q=${domain}`);
-            if (htRes.ok) {
-                const text = await htRes.text();
-                // If HackerTarget rate limits, it returns text like "error check your api key or api count exceeded"
+            const hRes = await fetch(ThreatAPI.CONSTANTS.CORS + `https://api.hackertarget.com/hostsearch/?q=${domain}`);
+            if (hRes.ok) {
+                const text = await hRes.text();
                 if (text.includes("error") || text.includes("exceeded")) {
-                    errorMessage = "HackerTarget Rate Limited.";
+                    errorMessage = "Recon Node Unavailable.";
                 } else {
                     text.split('\n').forEach(line => {
                         const sub = line.split(',')[0].trim().toLowerCase();
@@ -255,17 +255,15 @@ class ThreatAPI {
                 }
             }
         } catch (e) {
-            console.warn("HackerTarget API failed", e);
+            console.warn("API failed", e);
         }
 
-        // If Primary failed or was rate limited, fallback to crt.sh
+        // Fallback secondary node
         if (uniqueSubdomains.size === 0) {
             try {
-                // Secondary: crt.sh JSON
-                // Note: crt.sh can frequently lock up or rate limit heavily
-                const crtRes = await fetch(CORS_PROXY + `https://crt.sh/?q=%25.${domain}&output=json`);
-                if (crtRes.ok) {
-                    const data = await crtRes.json();
+                const altRes = await fetch(ThreatAPI.CONSTANTS.CORS + `https://crt.sh/?q=%25.${domain}&output=json`);
+                if (altRes.ok) {
+                    const data = await altRes.json();
                     if (Array.isArray(data)) {
                         data.forEach(entry => {
                             if (entry.name_value) {
@@ -288,7 +286,7 @@ class ThreatAPI {
         }
 
         if (uniqueSubdomains.size === 0) {
-            return { error: errorMessage || 'No subdomains found. The APIs may be rate limiting this IP.' };
+            return { error: errorMessage || 'No subdomains found. Recon networks may be throttling.' };
         }
 
         const result = Array.from(uniqueSubdomains).sort();
