@@ -15,11 +15,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSurveillance = document.getElementById('btnSurveillance');
     const btnGlobe = document.getElementById('btnGlobe');
     const btnOSINT = document.getElementById('btnOSINT');
+    const btnSubdomain = document.getElementById('btnSubdomain');
     
     const dashboardView = document.getElementById('dashboardView');
     const surveillanceView = document.getElementById('surveillanceView');
     const globeView = document.getElementById('globeView');
     const osintView = document.getElementById('osintView');
+    const subdomainView = document.getElementById('subdomainView');
     
     // New Crypto View Reference
     const btnCrypto = document.getElementById('btnCrypto');
@@ -93,6 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Crypto Wallet tracking
                 const data = await ThreatAPI.fetchCryptoWallet(query);
                 renderCrypto(data);
+            } else if (currentView === 'subdomain') {
+                const data = await ThreatAPI.fetchSubdomains(query);
+                renderSubdomains(data);
             } else if (currentView === 'globe') {
                 // Globe Tracker Search
                 if (window.globeTracker) {
@@ -389,6 +394,52 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Subdomain Render Logic ---
+    function renderSubdomains(data) {
+        const placeholder = document.getElementById('subdomainPlaceholder');
+        const results = document.getElementById('subdomainResults');
+        const status = document.getElementById('subdomainStatus');
+        const list = document.getElementById('subdomainList');
+        
+        status.style.visibility = 'visible';
+
+        if (data.error) {
+            status.textContent = 'Error';
+            status.className = 'status-badge danger';
+            results.style.display = 'none';
+            placeholder.style.display = 'block';
+            placeholder.innerHTML = `<div style="color: var(--danger);">Error: ${data.error}</div>`;
+            return;
+        }
+
+        placeholder.style.display = 'none';
+        results.style.display = 'block';
+
+        if (!data || data.length === 0) {
+            status.textContent = '0 Records';
+            status.className = 'status-badge safe';
+            list.innerHTML = '<div style="color: var(--text-secondary); width: 100%; text-align: center;">No subdomains found in the crt.sh registry.</div>';
+            return;
+        }
+
+        status.textContent = `${data.length} Found`;
+        status.className = 'status-badge pending';
+        
+        list.innerHTML = '';
+        data.forEach(sub => {
+            // Highlight highly sensitive sounding subdomains
+            const sensitiveKeywords = ['dev', 'admin', 'test', 'stage', 'vpn', 'api', 'secure', 'corp', 'mail'];
+            const isSensitive = sensitiveKeywords.some(keyword => sub.includes(keyword + '.'));
+            
+            const item = document.createElement('div');
+            item.className = 'subdomain-item' + (isSensitive ? ' sensitive' : '');
+            item.textContent = sub;
+            list.appendChild(item);
+        });
+    }
+
+
+
     // --- Tab Switching Logic ---
     function switchView(view) {
         currentView = view;
@@ -398,12 +449,14 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSurveillance.classList.remove('active');
         if (btnGlobe) btnGlobe.classList.remove('active');
         if (btnOSINT) btnOSINT.classList.remove('active');
+        if (btnSubdomain) btnSubdomain.classList.remove('active');
         if (btnCrypto) btnCrypto.classList.remove('active');
         
         dashboardView.classList.add('hidden');
         surveillanceView.classList.add('hidden');
         if (globeView) globeView.classList.add('hidden');
         if (osintView) osintView.classList.add('hidden');
+        if (subdomainView) subdomainView.classList.add('hidden');
         if (cryptoView) cryptoView.classList.add('hidden');
 
         if (view === 'dashboard') {
@@ -457,6 +510,13 @@ document.addEventListener('DOMContentLoaded', () => {
             userAvatar.classList.remove('hidden');
             userRole.textContent = 'Financial Investigator';
             searchInput.placeholder = "Search Bitcoin Address (e.g. 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa)...";
+        } else if (view === 'subdomain') {
+            if (btnSubdomain) btnSubdomain.classList.add('active');
+            if (subdomainView) subdomainView.classList.remove('hidden');
+            searchContainer.classList.remove('hidden');
+            userAvatar.classList.remove('hidden');
+            userRole.textContent = 'Infrastructure Recon';
+            searchInput.placeholder = "Search Domain (e.g. tesla.com)...";
         }
     }
 
@@ -464,5 +524,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSurveillance.addEventListener('click', () => switchView('surveillance'));
     if (btnGlobe) btnGlobe.addEventListener('click', () => switchView('globe'));
     if (btnOSINT) btnOSINT.addEventListener('click', () => switchView('osint'));
+    if (btnSubdomain) btnSubdomain.addEventListener('click', () => switchView('subdomain'));
     if (btnCrypto) btnCrypto.addEventListener('click', () => switchView('crypto'));
 });

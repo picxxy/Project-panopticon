@@ -19,52 +19,55 @@ Project Panopticon is a real-time, browser-based Open Source Intelligence (OSINT
 
 ---
 
-## 🛠️ Requirements & Installation
+## ⚠️ CRITICAL SETUP: CORS Proxy Authorization
 
-Because Project Panopticon runs natively in the browser, installation is incredibly simple.
+Because Project Panopticon runs 100% in the browser and accesses many external intelligence APIs (VirusTotal, HackerTarget, etc.), modern browsers will block these requests due to **CORS (Cross-Origin Resource Sharing) restrictions**. 
 
-### Prerequisites
+To bypass this without needing a backend server, this application uses the `cors-anywhere` proxy infrastructure. **You must authorize your machine to use this proxy every time you start a new session or your APIs will return errors.**
+
+### How to Authorize (Mandatory Step):
+1. Before using the dashboard, navigate directly to: **[https://cors-anywhere.herokuapp.com/corsdemo](https://cors-anywhere.herokuapp.com/corsdemo)**
+2. Click the button that says **"Request temporary access to the demo server"**.
+3. You will see a success message. Return to the Panopticon dashboard. The tools are now fully unlocked for your session.
+*(Note: You will need to click this button again if your session expires or if you restart your browser).*
+
+---
+
+## 🛠️ Installation
+
 1. A modern web browser (Edge, Chrome, Firefox, or Safari).
 2. A Free **AbuseIPDB** API Key.
 3. A Free **VirusTotal** API Key.
 
-### Setup Instructions
-1. Download or clone this repository to your local machine.
-2. Navigate to the `js/` folder and open `api.js` in your favorite text editor.
-3. Locate the `API_KEYS` object at the very top of `api.js`:
+### API Key Configuration
+1. Download or clone this repository.
+2. Open `js/api.js` in a text editor.
+3. Locate the `API_KEYS` object at the very top:
 ```javascript
 const API_KEYS = {
-    ABUSEIPDB: "YOUR_KEY_HERE", // Get yours at https://www.abuseipdb.com/
-    VIRUSTOTAL: "YOUR_KEY_HERE" // Get yours at https://www.virustotal.com/
+    ABUSEIPDB: "YOUR_KEY_HERE", 
+    VIRUSTOTAL: "YOUR_KEY_HERE" 
 };
 ```
-4. Paste your free API keys into the empty string slots and save the file.
+4. Paste your free API keys into the empty strings.
 
 ### Running the Dashboard
-Since the dashboard relies on authenticated API connections that standard browsers block when opening files directly off the hard drive, you must run it through a local server, **OR** utilize the built-in CORS Proxy system.
-
-**Method 1 (Easiest - Double Click):**
-1. Simply double-click `index.html` to open it in your browser.
-2. Because of browser security (CORS) against `file:///` URLs, you **must temporarily authorize the proxy**.
-3. Visit [https://cors-anywhere.herokuapp.com/corsdemo](https://cors-anywhere.herokuapp.com/corsdemo) and click **"Request temporary access to the demo server"**.
-4. Return to your dashboard, and your API keys will now work perfectly!
-
-**Method 2 (Recommended - Local Host):**
-Run a lightweight HTTP server in the root directory. If you have Python installed:
+Since the system is client-side, simply double-click `index.html` to launch it. Optionally, if you prefer running it securely via a local port:
 ```bash
 python -m http.server 8000
 ```
-Then navigate to `http://localhost:8000` in your browser.
+Then navigate to `http://localhost:8000`.
 
 ---
 
 ## 🖥️ Usage Guide
 
-1. **Dashboard:** Type any IP Address (e.g. `8.8.8.8`) or Domain (e.g. `tesla.com`) into the top search bar and click `Analyze`.
-2. **Surveillance:** Provides a 2D Leaflet mapping variant for pinpointing ISP routing nodes.
-3. **Globe Tracker:** Switch to the 3D globe tab after searching an IP to visualize the physical infrastructure on the planet.
-4. **Breach Intel:** Search an email address to query dark web credential breach records.
-5. **Crypto Trace:** Paste a Bitcoin wallet address (e.g., `1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa`) into the search bar while in the Crypto tab to pull forensic ledger data.
+1. **Dashboard:** Type any IP Address (e.g. `8.8.8.8`) or Domain (e.g. `tesla.com`) into the top search bar and click `Analyze` to get a threat score.
+2. **Subdomain Recon:** Switch to this tab and search a domain (like `tesla.com`) to instantly map its sub-infrastructure using HackerTarget and crt.sh certificate transparency logs.
+3. **Surveillance:** Provides a 2D Leaflet mapping variant for pinpointing ISP routing nodes.
+4. **Globe Tracker:** Switch to the 3D globe tab after searching an IP to visualize the physical infrastructure on the planet.
+5. **Breach Intel:** Search an email address to query dark web credential breach records via XposedOrNot.
+6. **Crypto Trace:** Paste a Bitcoin wallet address (e.g., `1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa`) to pull forensic ledger data.
 
 ---
 

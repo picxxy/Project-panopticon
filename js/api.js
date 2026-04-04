@@ -230,4 +230,69 @@ class ThreatAPI {
             return { error: 'Network error or invalid address format.' };
         }
     }
+
+    static async fetchSubdomains(domain) {
+        if (this.cache.has(`subdomain_${domain}`)) return this.cache.get(`subdomain_${domain}`);
+
+        const uniqueSubdomains = new Set();
+        let errorMessage = null;
+
+        try {
+            // Primary: HackerTarget Host Search (Fast, text-based CSV)
+            const htRes = await fetch(CORS_PROXY + `https://api.hackertarget.com/hostsearch/?q=${domain}`);
+            if (htRes.ok) {
+                const text = await htRes.text();
+                // If HackerTarget rate limits, it returns text like "error check your api key or api count exceeded"
+                if (text.includes("error") || text.includes("exceeded")) {
+                    errorMessage = "HackerTarget Rate Limited.";
+                } else {
+                    text.split('\n').forEach(line => {
+                        const sub = line.split(',')[0].trim().toLowerCase();
+                        if (sub && sub.endsWith(domain.toLowerCase())) {
+                            uniqueSubdomains.add(sub);
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn("HackerTarget API failed", e);
+        }
+
+        // If Primary failed or was rate limited, fallback to crt.sh
+        if (uniqueSubdomains.size === 0) {
+            try {
+                // Secondary: crt.sh JSON
+                // Note: crt.sh can frequently lock up or rate limit heavily
+                const crtRes = await fetch(CORS_PROXY + `https://crt.sh/?q=%25.${domain}&output=json`);
+                if (crtRes.ok) {
+                    const data = await crtRes.json();
+                    if (Array.isArray(data)) {
+                        data.forEach(entry => {
+                            if (entry.name_value) {
+                                entry.name_value.split('\n').forEach(sub => {
+                                    const cleanSub = sub.trim().toLowerCase();
+                                    if (!cleanSub.startsWith('*') && cleanSub.endsWith(domain.toLowerCase())) {
+                                        uniqueSubdomains.add(cleanSub);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                } else {
+                    errorMessage = "Crt.sh Rate Limited or Unavailable.";
+                }
+            } catch (e) {
+                console.warn("crt.sh API failed", e);
+                errorMessage = "Both APIs failed or timed out.";
+            }
+        }
+
+        if (uniqueSubdomains.size === 0) {
+            return { error: errorMessage || 'No subdomains found. The APIs may be rate limiting this IP.' };
+        }
+
+        const result = Array.from(uniqueSubdomains).sort();
+        this.cache.set(`subdomain_${domain}`, result);
+        return result;
+    }
 }

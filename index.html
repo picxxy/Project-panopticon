@@ -22,6 +22,7 @@
             <nav>
                 <button class="nav-btn active" id="btnDashboard">Dashboard</button>
                 <button class="nav-btn" id="btnOSINT">Breach Intel</button>
+                <button class="nav-btn" id="btnSubdomain">Subdomain Recon</button>
                 <button class="nav-btn" id="btnSurveillance">Surveillance</button>
                 <button class="nav-btn" id="btnGlobe">IP Tracker Globe</button>
                 <button class="nav-btn" id="btnCrypto">Crypto Trace</button>
@@ -184,6 +185,27 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Subdomain Recon View -->
+            <div id="subdomainView" class="hidden">
+                <div class="card map-card" style="overflow-y: auto;">
+                    <div class="card-header">
+                        <h3>Subdomain Enumerator (crt.sh)</h3>
+                        <span class="status-badge" id="subdomainStatus" style="visibility: hidden;">Ready</span>
+                    </div>
+                    <div id="subdomainResults" style="padding: 1.5rem; display: none;">
+                        <h4 style="margin-bottom: 1rem; color: var(--text-secondary);">Discovered Subdomains</h4>
+                        <div class="subdomain-grid" id="subdomainList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <div id="subdomainPlaceholder" style="text-align: center; color: var(--text-secondary); width: 100%; padding: 3rem 0;">
+                        Awaiting target Domain. E.g., tesla.com
+                    </div>
+                </div>
+            </div>
+
+
 
         </main>
     </div>
