@@ -98,8 +98,7 @@ class SurveillanceMap {
         this.updateStatus('Loading live data...');
 
         try {
-            const targetUrl = `${this.apiNode}/camera.php?bbox=${bbox}&zoom=${zoom}&width=${size.x}&height=${size.y}`;
-            const url = CORS_PROXY + targetUrl;
+            const url = `${ThreatAPI.BACKEND_URL}/map/cameras?bbox=${bbox}&zoom=${zoom}&width=${size.x}&height=${size.y}`;
             
             const res = await fetch(url);
             if (!res.ok) throw new Error("API failed");

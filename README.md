@@ -15,44 +15,38 @@ Project Panopticon is a real-time, browser-based Open Source Intelligence (OSINT
 - **Crypto Trace:** Instantly fetch live ledger data, total balances, and the 5 most recent transactions for any Bitcoin (BTC) address using the public blockchain integration.
 - **Breach Intel (Dark Web Cache):** Checks target email addresses against known public data breaches using the XposedOrNot framework.
 - **LRU Network Cache:** An intelligent built-in memory system prevents duplicate network API hits, ensuring lightning-fast subsequent OSINT queries while saving your API quotas.
-- **100% Client-Side:** No backend setup required. The dashboard runs entirely in the browser using raw Javascript, HTML, and CSS (with a sleek Glassmorphism design).
-
----
-
-## ⚠️ CRITICAL SETUP: CORS Proxy Authorization
-
-Because Project Panopticon runs 100% in the browser and accesses many external intelligence APIs (VirusTotal, HackerTarget, etc.), modern browsers will block these requests due to **CORS (Cross-Origin Resource Sharing) restrictions**. 
-
-To bypass this without needing a backend server, this application uses the `cors-anywhere` proxy infrastructure. **You must authorize your machine to use this proxy every time you start a new session or your APIs will return errors.**
-
-### How to Authorize (Mandatory Step):
-1. Before using the dashboard, navigate directly to: **[https://cors-anywhere.herokuapp.com/corsdemo](https://cors-anywhere.herokuapp.com/corsdemo)**
-2. Click the button that says **"Request temporary access to the demo server"**.
-3. You will see a success message. Return to the Panopticon dashboard. The tools are now fully unlocked for your session.
-*(Note: You will need to click this button again if your session expires or if you restart your browser).*
-
----
+- **Backend-Powered:** Uses a lightweight Python Flask backend to proxy requests securely and hide API keys.
 
 ## 🛠️ Installation
 
-1. A modern web browser (Edge, Chrome, Firefox, or Safari).
+1. Python 3 installed on your system.
 2. A Free **AbuseIPDB** API Key.
 3. A Free **VirusTotal** API Key.
 
 ### API Key Configuration
 1. Download or clone this repository.
-2. Open `js/api.js` in a text editor.
-3. Locate the `API_KEYS` object at the very top:
-```javascript
-const API_KEYS = {
-    ABUSEIPDB: "YOUR_KEY_HERE", 
-    VIRUSTOTAL: "YOUR_KEY_HERE" 
-};
+2. Create a copy of `.env.example` and name it `.env`.
+3. Open `.env` in a text editor and paste your free API keys:
+```env
+ABUSEIPDB_API_KEY=YOUR_KEY_HERE
+VIRUSTOTAL_API_KEY=YOUR_KEY_HERE
 ```
-4. Paste your free API keys into the empty strings.
 
-### Running the Dashboard
-Since the system is client-side, simply double-click `index.html` to launch it. Optionally, if you prefer running it securely via a local port:
+### Running the Project
+
+First, install the backend dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+Start the backend API server:
+```bash
+python app.py
+```
+
+The backend will start on `http://localhost:5000`.
+
+To view the dashboard, simply double-click `index.html` to launch it in your browser. Optionally, if you prefer running it securely via a local port, open a **new terminal** and run:
 ```bash
 python -m http.server 8000
 ```

@@ -2,19 +2,9 @@
  * api.js
  */
 
-// ==========================================
-// 🔴 ADD YOUR REAL API KEYS HERE 🔴
-// ==========================================
-const API_KEYS = {
-    ABUSEIPDB: "", // Get yours at https://www.abuseipdb.com/ (e.g. "2a9910ca4a...")
-    VIRUSTOTAL: "" // Get yours at https://www.virustotal.com/ (e.g. "a27f4e1579...")
-};
-
 class ThreatAPI {
-    // Network Proxies and Constants
-    static CONSTANTS = {
-        CORS: "https://cors-anywhere.herokuapp.com/"
-    };
+    // Backend URL
+    static BACKEND_URL = "http://127.0.0.1:5000/api";
     
     // Intelligent Cache to prevent duplicate network calls
     static cache = new Map();
@@ -27,18 +17,9 @@ class ThreatAPI {
 
     static async fetchAbuseIPDB(ip) {
         if (this.cache.has(`abuse_${ip}`)) return this.cache.get(`abuse_${ip}`);
-        if (!API_KEYS.ABUSEIPDB) throw new Error("API Key Missing");
-
-        const url = `https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}&maxAgeInDays=90`;
-        const proxyUrl = ThreatAPI.CONSTANTS.CORS + url;
 
         try {
-            const res = await fetch(proxyUrl, {
-                headers: {
-                    'Key': API_KEYS.ABUSEIPDB,
-                    'Accept': 'application/json'
-                }
-            });
+            const res = await fetch(`${this.BACKEND_URL}/abuseipdb?ip=${ip}`);
             if (!res.ok) throw new Error("AbuseIPDB request failed");
             const json = await res.json();
             const result = {
@@ -55,18 +36,20 @@ class ThreatAPI {
 
     static async fetchVirusTotal(target, isIP, isHash = false, isURL = false) {
         if (this.cache.has(`vt_${target}`)) return this.cache.get(`vt_${target}`);
-        if (!API_KEYS.VIRUSTOTAL) throw new Error("API Key Missing");
 
-        const endpoint = isHash ? `files/${target}` : (isURL ? `urls/${btoa(target).replace(/=/g, "")}` : `ip_addresses/${target}`);
-        const url = `https://www.virustotal.com/api/v3/${endpoint}`;
-        const proxyUrl = ThreatAPI.CONSTANTS.CORS + url;
+        let endpointUrl = "";
+        if (isHash) {
+            endpointUrl = `${this.BACKEND_URL}/virustotal/file?hash=${target}`;
+        } else if (isURL) {
+            endpointUrl = `${this.BACKEND_URL}/virustotal/url?url=${target}`;
+        } else if (isIP) {
+            endpointUrl = `${this.BACKEND_URL}/virustotal/ip?ip=${target}`;
+        } else {
+            endpointUrl = `${this.BACKEND_URL}/virustotal/domain?domain=${target}`;
+        }
 
         try {
-            const res = await fetch(proxyUrl, {
-                headers: {
-                    'x-apikey': API_KEYS.VIRUSTOTAL
-                }
-            });
+            const res = await fetch(endpointUrl);
             if (!res.ok) throw new Error("VirusTotal request failed");
             const json = await res.json();
             const stats = json.data.attributes.last_analysis_stats;
@@ -203,7 +186,7 @@ class ThreatAPI {
     static async locateIP(ip) {
         if (this.cache.has(`geo_${ip}`)) return this.cache.get(`geo_${ip}`);
         try {
-            const response = await fetch(`http://ip-api.com/json/${ip}`);
+            const response = await fetch(`${this.BACKEND_URL}/locate?ip=${ip}`);
             if (response.ok) {
                 const data = await response.json();
                 if (data.status === 'success') {
@@ -240,7 +223,7 @@ class ThreatAPI {
         let errorMessage = null;
 
         try {
-            const hRes = await fetch(ThreatAPI.CONSTANTS.CORS + `https://api.hackertarget.com/hostsearch/?q=${domain}`);
+            const hRes = await fetch(`${this.BACKEND_URL}/hackertarget?domain=${domain}`);
             if (hRes.ok) {
                 const text = await hRes.text();
                 if (text.includes("error") || text.includes("exceeded")) {
@@ -261,7 +244,7 @@ class ThreatAPI {
         // Fallback secondary node
         if (uniqueSubdomains.size === 0) {
             try {
-                const altRes = await fetch(ThreatAPI.CONSTANTS.CORS + `https://crt.sh/?q=%25.${domain}&output=json`);
+                const altRes = await fetch(`${this.BACKEND_URL}/crtsh?domain=${domain}`);
                 if (altRes.ok) {
                     const data = await altRes.json();
                     if (Array.isArray(data)) {
